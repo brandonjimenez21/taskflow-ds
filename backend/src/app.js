@@ -7,7 +7,7 @@ app.use(express.json());
 
 //rutas
 
-const userRouter = require("./routes/users");
-app.user("/api/users", userRoutes);
+const authRoutes = require("./routes/auth");
+app.use("/api", userRoutes);
 
 module.exports = app;

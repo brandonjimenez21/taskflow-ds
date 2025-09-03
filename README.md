@@ -77,7 +77,8 @@ Postman o Insomnia (para pruebas manuales de la API).
 Prisma Studio (npx prisma studio) → inspección visual de la BD.
 
 Instalar Please en el backend
-Express (npm install express cors dotenv @prisma/client)
+Express: npm install express cors dotenv @prisma/client
+npm install bcryptjs jsonwebtoken
 
 ### 8. Tipos de pruebas:
 
