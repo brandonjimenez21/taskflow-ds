@@ -1,8 +1,9 @@
 const prisma = require("./prisma");
 const bcrypt = require("bcryptjs");
+const { signToken } = require("../utils/jwt");
 const jwt = require("jsonwebtoken");
 
-const SECRET_KEY = process.env.JWT_SECRET || "supersecret"; // poner en .env en producción
+const SECRET_KEY = process.env.JWT_SECRET || "supersecreto"; // poner en .env en producción
 
 async function login(email, password) {
   const user = await prisma.user.findUnique({ where: { email } });
@@ -11,14 +12,33 @@ async function login(email, password) {
   const validPassword = await bcrypt.compare(password, user.password);
   if (!validPassword) throw new Error("Credenciales inválidas");
 
-  // generar token
-  const token = jwt.sign(
-    { id: user.id, role: user.role, departmentId: user.departmentId },
-    SECRET_KEY,
-    { expiresIn: "1h" }
-  );
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
 
-  return { token, user: { id: user.id, name: user.name, role: user.role } };
+  // opcional: guardar refreshToken en la DB si quieres invalidarlos
+  // await prisma.refreshToken.create({ data: { userId: user.id, token: refreshToken } });
+
+  return {
+    accessToken,
+    refreshToken,
+    user: { id: user.id, name: user.name, role: user.role }
+  };
 }
 
 module.exports = { login };
+
+function generateAccessToken(user) {
+  return jwt.sign(
+    { id: user.id, role: user.role },
+    SECRET_KEY,
+    { expiresIn: "15m" }
+  );
+}
+
+function generateRefreshToken(user) {
+  return jwt.sign(
+    { id: user.id },
+    SECRET_KEY,
+    { expiresIn: "7d" }
+  );
+}
