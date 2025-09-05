@@ -55,15 +55,9 @@ npm run dev
 cd backend
 npm install
 
-### 4. Crear un archivo .env en /backend (basado en .env.example):
+### 4. Crear un archivo .env en /backend:
 
-Copiar el archivo de ejemplo y renombrarlo
-Editar el nuevo .env con tus credenciales:
-
-postgres: usuario de PostgreSQL en tu PC.
-password: La contraseña que pusiste al instalar PostgreSQL.
-taskflowds: Nombre de la base de datos que usarás.
-JWT_SECRET: Se cambia por algo más fuerte en producción.
+Escribir al interno para la configuracion de este mismo
 
 ### 5. Migrar la base de datos:
 
@@ -72,3 +66,54 @@ npx prisma migrate dev --name init
 ### 6. Levantar el servidor:
 
 npm run dev
+
+### 7. Herramientas necesarias para hacer las pruebas unitarias e integracion:
+
+Node.js + npm (para ejecutar pruebas automatizadas).
+Jest (npm install --save-dev jest)
+Supertest (npm install --save-dev supertest)
+Prisma Test Utils (npm install --save-dev @quramy/prisma-fabbrica o lib similar para DB mock/test).
+Postman o Insomnia (para pruebas manuales de la API).
+Prisma Studio (npx prisma studio) → inspección visual de la BD.
+
+Instalar Please en el backend
+Express: npm install express cors dotenv @prisma/client
+npm install bcryptjs jsonwebtoken
+
+### 8. Tipos de pruebas:
+
+1) Pruebas unitarias (código, con Jest)
+
+Enfocadas en funciones individuales sin BD ni servidor.
+Ejemplos:
+
+Hash y verificación de contraseña (bcrypt).
+Generación/verificación de JWT.
+Validación de email único en capa de servicio.
+Validaciones de negocio (ej: fecha de vencimiento > fecha inicio).
+
+2) Pruebas de integración (código, con Jest + Supertest)
+
+Enfocadas en probar endpoints con DB de pruebas.
+Ejemplos:
+
+POST /register: crea usuario y valida email único.
+POST /login: devuelve token válido.
+GET /tasks: lista tareas del usuario/gerente con filtros.
+PUT /tasks/:id: solo dueño puede editar.
+GET /stats: estadísticas correctas.
+
+3) Pruebas manuales/visuales
+
+Responsable: Todo el equipo (cada quien puede validar su parte y tomar screenshot)
+
+Con Postman / Insomnia
+Importar colección de endpoints.
+Probar casos edge:
+Intentar crear dos usuarios con el mismo email.
+Crear tareas vencidas y ver si aparecen en estadísticas.
+Probar login con credenciales incorrectas.
+
+Con Prisma Studio
+Revisar que al crear usuario/tarea vía API realmente aparezca en la BD.
+Ver que al eliminar tareas desde el backend, se borren en la BD.
