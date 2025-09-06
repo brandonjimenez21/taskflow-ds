@@ -10,6 +10,11 @@ app.get("/", (req, res) => {
 
 // Importar rutas
 const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/users");
+const taskRoutes = require("./routes/tasks");
+
 app.use("/api", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/tasks", taskRoutes);
 
 module.exports = app;
