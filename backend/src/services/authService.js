@@ -61,4 +61,10 @@ function generateRefreshToken(user) {
     { expiresIn: "7d" }
   );
 }
-module.exports = {register};
+
+module.exports = {
+  login,
+  register,
+  generateAccessToken,
+  generateRefreshToken
+};
