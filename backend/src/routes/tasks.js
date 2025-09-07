@@ -1,31 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const prisma = require("../services/prisma");
+const { createTask, deleteTask } = require("../controllers/taskController");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 // Crear tarea
-router.post("/", async (req, res) => {
-  const { title, description, status, priority, dueDate, userId } = req.body;
+router.post("/", createTask);
 
-  if (!title || !dueDate || !userId) {
-    return res.status(400).json({ error: "Faltan campos obligatorios" });
-  }
-
-  try {
-    const task = await prisma.task.create({
-      data: {
-        title,
-        description,
-        status,
-        priority,
-        dueDate: new Date(dueDate),
-        userId
-      },
-    });
-    res.status(201).json(task);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error creando la tarea" });
-  }
-});
+// Eliminar tarea
+router.delete("/:id", authMiddleware, deleteTask);
 
 module.exports = router;
