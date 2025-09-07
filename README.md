@@ -61,7 +61,10 @@ Escribir al interno para la configuracion de este mismo
 
 ### 5. Migrar la base de datos:
 
-npx prisma migrate dev --name init
+npx prisma migrate dev --name init 
+
+luego generar cliente de prisma
+npx prisma generate
 
 ### 6. Levantar el servidor:
 
