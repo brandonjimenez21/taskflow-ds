@@ -1,5 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const prisma = require("../services/prisma");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const { login } = require("../services/authService");
 const { refreshToken } = require("../controllers/authController");
 
@@ -15,6 +18,56 @@ router.post("/login", async (req, res) => {
     return res.status(200).json(result);
   } catch (error) {
     return res.status(401).json({ error: "Credenciales inválidas" });
+  }
+});
+
+// Registrar nuevo usuario
+router.post('/register', async (req, res) => {
+    const { name, email, password, role, departmentId } = req.body;
+
+    try {
+        // Verificar si el usuario ya existe
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ error: 'El correo ya está en uso' });
+        }
+        // Hashear la contraseña
+        const hashedPassword = await bcrypt.hash(password, 10);
+        // Crear el usuario
+        const user = await prisma.user.create({
+            data: { name, email, password: hashedPassword, role, departmentId },
+        });
+
+        // Generar token JWT
+        const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.json({ token });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al registrar el usuario' });
+    }
+});
+
+router.post("/logout", (req, res) => {
+  // Aquí podrías manejar la lógica de invalidar el token si estás almacenando tokens en la base de datos
+  res.status(200).json({ message: "Logout exitoso" });
+});
+
+router.post("/reset-password", async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: "Token y nueva contraseña son requeridos" });
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+    res.json({ message: "Contraseña reseteada exitosamente" });
+  } catch (error) {
+    res.status(400).json({ error: "Token inválido o expirado" });
   }
 });
 
