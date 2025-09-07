@@ -13,6 +13,12 @@ enum Status {
   DONE
 }
 
+enum Role {
+  User
+  Manager
+  Admin
+}
+
 enum Priority {
   LOW
   MEDIUM
@@ -24,7 +30,7 @@ model User {
   name         String
   email        String      @unique // Restricción, no se permite dos usuarios con el mismo correo
   password     String
-  role         String      // "user" o "manager"
+  role         enum      @default(User) 
   department   Department  @relation(fields: [departmentId], references: [id])
   departmentId Int
   tasks        Task[]

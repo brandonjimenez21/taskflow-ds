@@ -12,7 +12,7 @@ router.post("/", authMiddleware, async (req, res) => {
     return res.status(400).json({ error: "Faltan campos obligatorios" });
   }
 
-  if (req.user.role !== 'admin' && req.user.userId !== userId) {
+  if (req.user.role !== 'Manager' && req.user.userId !== userId) {
     return res.status(403).json({ error: "Usuario no apto a crear tarea" });
   }
 
@@ -41,7 +41,7 @@ router.post("/edit", authMiddleware, async (req, res) => {
     return res.status(400).json({ error: "Faltan campos obligatorios" });
   }
 
-  if (req.user.role !== 'admin' && req.user.id !== userId) {
+  if (req.user.role !== 'Manager' && req.user.id !== userId) {
     return res.status(400).json({ error: "Usuario no apto a modificar tarea" });
   }
   
@@ -61,7 +61,7 @@ router.post("/edit", authMiddleware, async (req, res) => {
 router.delete("/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
 
-  if (req.user.role !== 'admin' && req.user.userId !== userId) {
+  if (req.user.role !== 'Manager' && req.user.userId !== userId) {
     return res.status(403).json({ error: "Usuario no apto a eliminar tarea" });
   }
 
