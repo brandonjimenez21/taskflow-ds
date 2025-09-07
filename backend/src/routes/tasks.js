@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../services/prisma");
 const authMiddleware = require("../middlewares/authMiddleware");
+const { generateToken, verifyToken } = require("../services/tokenService");
 
 // Crear tarea
 router.post("/", authMiddleware, async (req, res) => {
@@ -87,6 +88,29 @@ router.get("/", authMiddleware, async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Error obteniendo las tareas" });
   }
+});
+
+router.post("/test-token", (req, res) => {
+  const {userId} = req.body;
+  if (!userId) {
+    return res.status(400).json({ error: "userId es requerido" });
+  }
+  const token = generateToken({ userId });
+  res.json({ token });
+});
+
+router.post("/verify-token", (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return res.status(400).json({ error: "Token es requerido" });
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return res.status(401).json({ error: "Token inválido o expirado" });
+  }
+
+  res.json({ message: "Token válido", decoded });
 });
 
 module.exports = router;
