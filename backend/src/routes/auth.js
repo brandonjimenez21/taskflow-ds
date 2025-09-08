@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const { login } = require("../services/authService");
 const { refreshToken } = require("../controllers/authController");
 
+// Login
 router.post("/login", async (req, res) => {
   const { email, password } = req.body || {};
 
@@ -22,32 +23,54 @@ router.post("/login", async (req, res) => {
 });
 
 // Registrar nuevo usuario
-router.post('/register', async (req, res) => {
-    const { name, email, password, role, departmentId } = req.body;
+router.post("/register", async (req, res) => {
+  const { name, email, password, role, departmentId } = req.body;
 
-    try {
-        // Verificar si el usuario ya existe
-        const existingUser = await prisma.user.findUnique({ where: { email } });
-        if (existingUser) {
-            return res.status(400).json({ error: 'El correo ya está en uso' });
-        }
-        // Hashear la contraseña
-        const hashedPassword = await bcrypt.hash(password, 10);
-        // Crear el usuario
-        const user = await prisma.user.create({
-            data: { name, email, password: hashedPassword, role, departmentId },
-        });
-
-        // Generar token JWT
-        const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
-    } catch (error) {
-        res.status(500).json({ error: 'Error al registrar el usuario' });
+  try {
+    if (!name || !email || !password || !departmentId) {
+      return res.status(400).json({ error: "Todos los campos son requeridos" });
     }
+
+    // Verificar si el usuario ya existe
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ error: "El correo ya está en uso" });
+    }
+
+    // Hashear la contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Crear el usuario
+    const user = await prisma.user.create({
+      data: { name, email, password: hashedPassword, role, departmentId },
+    });
+
+    // Generar token JWT
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // Respuesta segura
+    res.status(201).json({
+      message: "Usuario registrado exitosamente",
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        departmentId: user.departmentId,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Error al registrar el usuario" });
+  }
 });
 
+// Logout
 router.post("/logout", (req, res) => {
-  // Aquí podrías manejar la lógica de invalidar el token si estás almacenando tokens en la base de datos
   res.status(200).json({ message: "Logout exitoso" });
 });
 
@@ -90,20 +113,24 @@ router.post("/reset-password", async (req, res) => {
   if (!token || !newPassword) {
     return res.status(400).json({ error: "Token y nueva contraseña son requeridos" });
   }
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: userId },
       data: { password: hashedPassword },
     });
+
     res.json({ message: "Contraseña reseteada exitosamente" });
   } catch (error) {
     res.status(400).json({ error: "Token inválido o expirado" });
   }
 });
 
+// Refresh token
 router.post("/refresh", refreshToken);
 
 module.exports = router;
