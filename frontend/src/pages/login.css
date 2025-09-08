@@ -68,11 +68,19 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease-in-out;
+  transition: background 0.3s ease, opacity 0.3s ease, cursor 0.3s ease;
 }
 
 .btn-primary:hover {
   background: #1d4ed8;
+}
+
+/* Estado deshabilitado */
+.btn-primary:disabled {
+  background: #93c5fd;   /* azul clarito */
+  color: #e5e7eb;        /* gris suave */
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* Mensajes de error */
