@@ -1,22 +1,39 @@
 import React, { useEffect, useState } from "react";
 import TaskCard from "../components/TaskCard";
+import { useAuth } from "../contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 
 const TasksPage = () => {
   const [tasks, setTasks] = useState([]);
   const token = localStorage.getItem("accessToken");
+  const { user } = useAuth();
+  const location = useLocation();
 
   useEffect(() => {
-    fetch("http://localhost:3000/tasks/user/1", {
+    if (!user) return;
+
+    fetch(`http://localhost:4000/api/tasks/user/${user.id}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => res.json())
-      .then((data) => setTasks(data));
-  }, []);
+      .then((res) => {
+        if (!res.ok) throw new Error("Error al cargar tareas");
+        return res.json();
+      })
+      .then((data) => {
+        // Si hay una tarea nueva en el state, agrégala al inicio del listado
+        if (location.state?.newTask) {
+          setTasks([location.state.newTask, ...data]);
+        } else {
+          setTasks(data);
+        }
+      })
+      .catch((err) => console.error(err));
+  }, [user, token, location.state]);
 
   // Cambiar estado
   const updateTaskStatus = async (taskId, newStatus) => {
     const task = tasks.find((t) => t.id === taskId);
-    await fetch("http://localhost:3000/tasks/edit", {
+    await fetch("http://localhost:4000/api/tasks/edit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -32,7 +49,7 @@ const TasksPage = () => {
     const task = tasks.find((t) => t.id === taskId);
     const updatedTask = { ...task, ...updates };
 
-    await fetch("http://localhost:3000/tasks/edit", {
+    await fetch("http://localhost:4000/api/tasks/edit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -46,7 +63,7 @@ const TasksPage = () => {
 
   // Eliminar tarea
   const deleteTask = async (taskId) => {
-    await fetch(`http://localhost:3000/tasks/${taskId}`, {
+    await fetch(`http://localhost:4000/api/tasks/${taskId}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });

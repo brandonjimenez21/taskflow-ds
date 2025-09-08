@@ -20,7 +20,7 @@ const Login = () => {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:4000/login", {
+      const res = await fetch("http://localhost:4000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -29,8 +29,8 @@ const Login = () => {
       if (!res.ok) throw new Error("Credenciales inválidas");
 
       const data = await res.json();
-      await login(data.token);
-      navigate("/");
+      await login(data.accessToken, data.user); // 👈 guardamos token + user
+      navigate("/create-task"); // 👈 redirigimos a crear tarea
     } catch (err) {
       setError(err.message || "Error al iniciar sesión");
     }

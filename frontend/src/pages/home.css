@@ -1,0 +1,98 @@
+/* home.css - guarda en src/pages/home.css */
+
+:root{
+  --bg: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --primary: #2563eb;
+  --btn-text: #fff;
+  --header-height: 72px;
+}
+
+*{box-sizing:border-box}
+body,html,#root{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+
+.home-container{
+  min-height:100vh;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+}
+
+/* Header */
+.home-header{
+  height:var(--header-height);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  border-bottom:1px solid #e6e6e6;
+}
+.home-header .logo{display:flex;align-items:center;gap:10px}
+.home-header img{height:28px}
+.home-nav{display:flex;align-items:center;gap:18px}
+.home-nav a{color:var(--muted);text-decoration:none;font-weight:500}
+.home-nav .btn-login{
+  background:#9aa3ad;
+  color:var(--btn-text);
+  padding:8px 12px;
+  border-radius:6px;
+  text-decoration:none;
+}
+
+/* Hero */
+.home-main{
+  display:flex;
+  gap:40px;
+  align-items:center;
+  justify-content:space-between;
+  padding:48px 80px;
+  flex:1;
+}
+
+.home-text{
+  max-width:520px;
+}
+.home-text h1{
+  font-size:48px;
+  margin:0 0 16px 0;
+  line-height:1.05;
+  font-weight:700;
+}
+.home-text p{
+  color:var(--muted);
+  font-size:16px;
+  line-height:1.6;
+  margin:0 0 20px 0;
+}
+.btn-primary{
+  background:var(--primary);
+  color:var(--btn-text);
+  padding:10px 16px;
+  border-radius:8px;
+  text-decoration:none;
+  display:inline-block;
+  font-weight:600;
+}
+
+/* Placeholder image box */
+.home-image .placeholder-box{
+  width:420px;
+  height:360px;
+  border:2px solid #cfcfcf;
+  border-radius:6px;
+  background:linear-gradient(180deg,#fff,#fafafa);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#9aa3ad;
+  font-weight:600;
+}
+
+/* Responsive */
+@media (max-width:900px){
+  .home-main{flex-direction:column; padding:24px}
+  .home-image .placeholder-box{width:80%; height:240px}
+  .home-text h1{font-size:36px}
+}
