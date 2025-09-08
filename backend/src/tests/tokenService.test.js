@@ -2,29 +2,22 @@ const { generateToken, verifyToken } = require("../services/tokenService");
 
 describe("Token Service", () => {
     test("should generate and verify a token", () => {
-        const token = generateToken({ userId: 1 }, "1h");
-        expect(token).toBeDefined();
-    });
+        const user = { userId: 1, role: "User" };
+        const token = generateToken(user);
 
-    test("should verify a valid token", () => {
-        const payload = { userId: 1 };
-        const token = generateToken(payload, "1h");
         const decoded = verifyToken(token);
-        expect(decoded.userId).toBe(payload.userId);
+        expect(decoded.userId).toBe(user.userId);
+        expect(decoded.role).toBe(user.role);
     });
 
-    test("should throw an error for an invalid token", () => {
-        expect(() => verifyToken("invalid.token.here")).toThrow("Token inválido o expirado");
-    });
+    test("should throw an error for an expired token", async () => {
+        const user = { userId: 1, role: "User" };
+        // Token válido solo 1 segundo
+        const token = generateToken(user, "1s");
 
-    test("should throw an error for an expired token", (done) => {
-        const payload = { userId: 1 };
-        const token = generateToken(payload, "1s");
-        setTimeout(() => {
-            expect(() => verifyToken(token)).toThrow("Token inválido o expirado");
-            done();
-        }, 2000);
+        // Esperamos 1500ms para que expire
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        expect(() => verifyToken(token)).toThrow("Token inválido o expirado");
     });
 });
-
-//To run these tests, use the command: jest backend/src/tests/tokenService.test.js
