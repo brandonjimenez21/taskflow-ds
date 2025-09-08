@@ -91,8 +91,7 @@ router.get("/", authMiddleware, async (req, res) => {
       const allowedFields = ["dueDate", "priority"];
       const allowedDirections = ["asc", "desc"];
       if (
-        field &&
-        direction &&
+        field && direction &&
         allowedFields.includes(field) &&
         allowedDirections.includes(direction.toLowerCase())
       ) {
@@ -103,7 +102,7 @@ router.get("/", authMiddleware, async (req, res) => {
     }
 
     // Construir filtro de búsqueda, incluyendo deleted: false
-    let where = { deleted: false }; // 👈 solo tareas activas
+    let where = { deleted: false }; // solo tareas activas
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
