@@ -35,6 +35,7 @@ model User {
   departmentId Int
   tasks        Task[]
   resetTokens  PasswordResetToken[]
+  filters      Filter[]
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 }
@@ -66,4 +67,14 @@ model PasswordResetToken {
   userId    Int
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model Filter {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  name      String?
+  filters   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

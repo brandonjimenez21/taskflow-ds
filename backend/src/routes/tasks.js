@@ -81,9 +81,40 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 // Listar tareas
 router.get("/", authMiddleware, async (req, res) => {
   try {
+    const { search, orderBy } = req.query;
+
+    // Construir orden seguro (igual que hicimos antes)
+    let order = undefined;
+    if (orderBy) {
+      const [field, direction] = orderBy.split(" ");
+      const allowedFields = ["dueDate", "priority"];
+      const allowedDirections = ["asc", "desc"];
+      if (
+        field && direction &&
+        allowedFields.includes(field) &&
+        allowedDirections.includes(direction.toLowerCase())
+      ) {
+        order = { [field]: direction.toLowerCase() };
+      } else {
+        return res.status(400).json({ error: "Parámetro orderBy inválido" });
+      }
+    }
+
+    // Construir filtro de búsqueda
+    let where = {};
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
     const tasks = await prisma.task.findMany({
+      where,
       include: { user: { select: { id: true, name: true, email: true } } },
+      orderBy: order,
     });
+
     res.json(tasks);
   } catch (error) {
     console.error(error);
@@ -135,41 +166,53 @@ router.get("/stats", authMiddleware, requireManager, async (req, res) => {
 router.get("/user/:userId", authMiddleware, async (req, res) => {
   const { userId } = req.params;
 
+  // Validación de permisos
   if (req.user.role !== 'Manager' && req.user.userId !== Number(userId)) {
     return res.status(403).json({ error: "Usuario no apto a ver estas tareas" });
   }
 
-  
   try {
+    // Obtener filtros y orderBy del query
+    const { status, priority, dueDateFrom, dueDateTo, orderBy } = req.query;
 
-    const { status, priority, dueDateFrom, dueDateTo } = req.query;
-
+    // Construir filtros
     const filters = { userId: Number(userId) };
-
-    if (status) {
-      filters.status = status;
-    }
-
-    if (priority) {
-      filters.priority = priority;
-    }
-
+    if (status) filters.status = status;
+    if (priority) filters.priority = priority;
     if (dueDateFrom || dueDateTo) {
       filters.dueDate = {};
-      if (dueDateFrom) {
-        filters.dueDate.gte = new Date(dueDateFrom);
-      }
-      if (dueDateTo) {
-        filters.dueDate.lte = new Date(dueDateTo);
+      if (dueDateFrom) filters.dueDate.gte = new Date(dueDateFrom);
+      if (dueDateTo) filters.dueDate.lte = new Date(dueDateTo);
+    }
+
+    // Construir orden seguro
+    let order = undefined;
+    if (orderBy) {
+      const [field, direction] = orderBy.split(" ");
+      const allowedFields = ["dueDate", "priority"]; // campos permitidos
+      const allowedDirections = ["asc", "desc"];
+
+      if (
+        field && direction &&
+        allowedFields.includes(field) &&
+        allowedDirections.includes(direction.toLowerCase())
+      ) {
+        order = { [field]: direction.toLowerCase() };
+      } else {
+        return res.status(400).json({ error: "Parámetro orderBy inválido" });
       }
     }
 
+    // Obtener tareas con filtros y orden
     const tasks = await prisma.task.findMany({
       where: filters,
       include: { user: { select: { id: true, name: true, email: true } } },
+      orderBy: order,
     });
-  } 
-  catch (error) {
+
+    res.json(tasks);
+
+  } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error obteniendo las tareas del usuario" });
   }
