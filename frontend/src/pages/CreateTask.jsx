@@ -10,25 +10,41 @@ const CreateTask = () => {
   const [limitDate, setLimitDate] = useState("");
   const [tags, setTags] = useState("");
   const [error, setError] = useState("");
-  const { isAuthenticated } = useAuth();
+
+  const { token } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!isAuthenticated) {
+
+    // Validar si hay sesión
+    if (!token) {
       setError("Debes iniciar sesión para crear una tarea");
       return;
     }
+
     try {
-      const token = document.cookie.split("=")[1];
-      const res = await fetch("http://localhost:4000/tasks", {
+      const res = await fetch("http://localhost:4000/api/tasks", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, priority, limitDate, tags, token }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, //ahora sí
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          priority: priority === "1" ? "LOW" : priority === "2" ? "MEDIUM" : "HIGH",
+          dueDate: limitDate,
+        }),
       });
-      if (!res.ok) throw new Error("Error al crear la tarea");
-      navigate("/");
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Error al crear la tarea");
+      }
+
+      navigate("/tasks");
     } catch (err) {
       setError(err.message || "Error al crear la tarea");
     }

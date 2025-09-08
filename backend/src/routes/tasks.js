@@ -16,7 +16,7 @@ function requireManager(req, res, next) {
 // Crear tarea
 router.post("/", authMiddleware, async (req, res) => {
   const { title, description, status, priority, dueDate } = req.body;
-  const userId = req.user.userId; // tomar el userId del token, no del body
+  const userId = req.user.id; // tomar el userId del token, no del body
 
   // Validar campos obligatorios
   if (!title || !dueDate) {
@@ -28,8 +28,8 @@ router.post("/", authMiddleware, async (req, res) => {
       data: {
         title,
         description,
-        status: status || "pendiente",
-        priority: priority || "media",
+        status: status || "TODO",
+        priority: priority || "MEDIUM",
         dueDate: new Date(dueDate),
         userId
       },

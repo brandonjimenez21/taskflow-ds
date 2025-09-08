@@ -12,7 +12,7 @@ const ManagerDashboard = () => {
   const token = localStorage.getItem("accessToken");
 
   useEffect(() => {
-    fetch("http://localhost:3000/stats", {
+    fetch("http://localhost:4000/api/stats", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())

@@ -19,7 +19,7 @@ async function main() {
       name: 'Juan Pérez',
       email: 'juan@example.com',
       password: passwordHash,
-      role: 'user',
+      role: 'User',
       departmentId: department.id,
     },
   });
