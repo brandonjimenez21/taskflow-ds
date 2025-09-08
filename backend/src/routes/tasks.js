@@ -113,4 +113,22 @@ router.post("/verify-token", (req, res) => {
   res.json({ message: "Token válido", decoded });
 });
 
+router.get("/stats", authMiddleware, requireManager, async (req, res) => {
+  try {
+    const totalTasks = await prisma.task.count();
+    const tasksByStatus = await prisma.task.groupBy({
+      by: ['status'],
+      _count: { status: true },
+    });
+    const tasksByPriority = await prisma.task.groupBy({
+      by: ['priority'],
+      _count: { priority: true },
+    });
+    res.json({ totalTasks, tasksByStatus, tasksByPriority });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error obteniendo estadísticas" });
+  }
+});
+
 module.exports = router;
