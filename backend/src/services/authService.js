@@ -25,9 +25,28 @@ async function login(email, password) {
   };
 }
 
+async function register({ name, email, password, role }) {
+  const hashedPassword = await bcrypt.hash(password, 10);
 
+  const newUser = await prisma.user.create({
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+      role: role || "user" // por defecto usuario normal
+    }
+  });
 
+  // Opcional: devolver también tokens
+  const accessToken = generateAccessToken(newUser);
+  const refreshToken = generateRefreshToken(newUser);
 
+  return {
+    accessToken,
+    refreshToken,
+    user: { id: newUser.id, name: newUser.name, role: newUser.role }
+  };
+}
 
 function generateAccessToken(user) {
   return jwt.sign(
