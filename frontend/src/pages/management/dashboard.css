@@ -1,0 +1,78 @@
+/* Contenedor general */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f9fafb;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* Encabezado */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.dashboard-header span {
+  font-size: 0.95rem;
+  color: #4b5563;
+}
+
+/* Grid principal de contenido */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+/* Card reutilizable */
+.dashboard-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Resumen de métricas */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-box {
+  background: #f3f4f6;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.metric-title {
+  font-size: 0.9rem;
+  color: #374151;
+  margin-bottom: 0.3rem;
+}
+
+.metric-value {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #2563eb;
+}

@@ -1,0 +1,31 @@
+/* Contenedor principal para listados */
+.tasks-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  width: 100%;
+  background: #f9fafb;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* Card general para listado */
+.tasks-card {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Item de cada tarea */
+.task-item {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 0;
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
