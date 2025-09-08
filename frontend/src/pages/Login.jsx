@@ -1,80 +1,100 @@
 import React, { useState, useEffect } from "react";
-import './login.css';
-import { Form, Button, useNavigate, Container, Card } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import logo from "../images/logo.png"; // 👈 Importamos el logo local
+import "./login.css";
 
 const Login = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const { login, isAuthenticated } = useAuth();
-    const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        if (isAuthenticated) {navigate("/");}},[isAuthenticated, navigate]);
+  useEffect(() => {
+    if (isAuthenticated) navigate("/");
+  }, [isAuthenticated, navigate]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
 
+    try {
+      const res = await fetch("http://localhost:4000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-        try {
+      if (!res.ok) throw new Error("Credenciales inválidas");
 
-            const res = await fetch("http://localhost:4000/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
+      const data = await res.json();
+      await login(data.token);
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Error al iniciar sesión");
+    }
+  };
 
-            if (!res.ok) throw new Error("Credenciales inválidas");
+  return (
+    <div className="login-container">
+      <div className="form-card">
+        {/* Logo */}
+        <div className="logo">
+          <img src={logo} alt="Logo" />
+          <span>TaskFlow DS</span>
+        </div>
 
-            const data = await res.json();
+        {/* Título */}
+        <h2>Iniciar Sesión</h2>
 
-            // Guardar el token en el contexto de autenticación en la cookie
-            res.cookie("token", data.token, { httpOnly: true, secure: true, sameSite: "Strict" });
-            await login(data.token);
+        {/* Error */}
+        {error && <div className="alert alert-danger">{error}</div>}
 
+        {/* Formulario */}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="email">
+              Correo electrónico
+            </label>
+            <input
+              type="email"
+              id="email"
+              className="form-control"
+              placeholder="nombre@empresa.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-            navigate("/");
-        } catch (err) {
-            setError(err.message || "Error al iniciar sesión");
-        }
-    };
+          <div className="form-group">
+            <label className="form-label" htmlFor="password">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              id="password"
+              className="form-control"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
+          <button type="submit" className="btn-primary">
+            Iniciar Sesión
+          </button>
+        </form>
 
-    return (
-        <Container className="d-flex align-items-center justify-content-center min-vh-100" controlId="formBasicEmail">
-            <Card className="p-4 shadow login-card" controlId="loginCard">
-                <h2 className="mb-4 text-center">Iniciar Sesión</h2>
-                {error && <div className="alert alert-danger">{error}</div>}
-                <Form onSubmit={handleSubmit} controlId="loginForm">
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>Email</Form.Label>
-                        <Form.Control
-                            type="email"
-                            placeholder="Ingresa tu email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </Form.Group>
-                    <Form.Group className="mb-3" controlId="formBasicPassword">
-                        <Form.Label>Contraseña</Form.Label>
-                        <Form.Control
-                            type="password"
-                            placeholder="Ingresa tu contraseña"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </Form.Group>
-                    <Button variant="primary" type="submit" className="w-100" controlId="submitButton">
-                        Iniciar Sesión
-                    </Button>
-                </Form>
-            </Card>
-        </Container>
-    );
-}
+        {/* Footer */}
+        <div className="form-extra">
+          <a href="#">¿Olvidaste tu contraseña?</a>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default Login;
