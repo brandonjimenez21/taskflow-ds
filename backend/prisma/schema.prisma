@@ -49,7 +49,7 @@ model Task {
   id          Int      @id @default(autoincrement())
   title       String
   description String?
-  status      Status   @default(TODO)
+  status      enum     @default(TODO)
   priority    Priority @default(MEDIUM)
   startDate   DateTime @default(now())
   dueDate     DateTime
