@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../services/prisma");
 const authMiddleware = require("../middlewares/authMiddleware");
+const { generateToken, verifyToken } = require("../services/tokenService");
 
 // Crear tarea
 router.post("/", authMiddleware, async (req, res) => {
@@ -86,6 +87,86 @@ router.get("/", authMiddleware, async (req, res) => {
   catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error obteniendo las tareas" });
+  }
+});
+
+router.post("/test-token", (req, res) => {
+  const {userId} = req.body;
+  if (!userId) {
+    return res.status(400).json({ error: "userId es requerido" });
+  }
+  const token = generateToken({ userId });
+  res.json({ token });
+});
+
+router.post("/verify-token", (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return res.status(400).json({ error: "Token es requerido" });
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return res.status(401).json({ error: "Token inválido o expirado" });
+  }
+
+  res.json({ message: "Token válido", decoded });
+});
+
+router.get("/stats", authMiddleware, requireManager, async (req, res) => {
+  try {
+    const totalTasks = await prisma.task.count();
+    const tasksByStatus = await prisma.task.groupBy({
+      by: ['status'],
+      _count: { status: true },
+    });
+    const tasksByPriority = await prisma.task.groupBy({
+      by: ['priority'],
+      _count: { priority: true },
+    });
+    res.json({ totalTasks, tasksByStatus, tasksByPriority });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error obteniendo estadísticas" });
+  }
+});
+
+router.get("/user/:userId", authMiddleware, async (req, res) => {
+  const { userId } = req.params;
+
+  if (req.user.role !== 'Manager' && req.user.userId !== Number(userId)) {
+    return res.status(403).json({ error: "Usuario no apto a ver estas tareas" });
+  }
+
+  try {
+    const filters = { userId: Number(userId) };
+
+    if (status) {
+      filters.status = status;
+    }
+
+    if (priority) {
+      filters.priority = priority;
+    }
+
+    if (dueDateFrom || dueDateTo) {
+      filters.dueDate = {};
+      if (dueDateFrom) {
+        filters.dueDate.gte = new Date(dueDateFrom);
+      }
+      if (dueDateTo) {
+        filters.dueDate.lte = new Date(dueDateTo);
+      }
+    }
+
+    const tasks = await prisma.task.findMany({
+      where: filters,
+      include: { user: { select: { id: true, name: true, email: true } } },
+    });
+  } 
+  catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error obteniendo las tareas del usuario" });
   }
 });
 
