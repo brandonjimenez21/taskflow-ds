@@ -83,8 +83,12 @@ const Login = () => {
             />
           </div>
 
-          <button type="submit" className="btn-primary">
-            Iniciar Sesión
+          <button 
+          type="submit" 
+          className="btn-primary"
+          disabled={!email || !password} // deshabilitado si falta correo o contraseña
+          >
+          Iniciar Sesión
           </button>
         </form>
 
