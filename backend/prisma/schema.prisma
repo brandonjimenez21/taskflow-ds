@@ -13,6 +13,12 @@ enum Status {
   DONE
 }
 
+enum Role {
+  User
+  Manager
+  Admin
+}
+
 enum Priority {
   LOW
   MEDIUM
@@ -20,16 +26,17 @@ enum Priority {
 }
 
 model User {
-  id           Int         @id @default(autoincrement())
+  id           Int                  @id @default(autoincrement())
   name         String
-  email        String      @unique // Restricción, no se permite dos usuarios con el mismo correo
+  email        String               @unique
   password     String
-  role         String      // "user" o "manager"
+  role         Role      @default(User) 
   department   Department  @relation(fields: [departmentId], references: [id])
   departmentId Int
   tasks        Task[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  resetTokens  PasswordResetToken[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 }
 
 model Department {
@@ -50,4 +57,13 @@ model Task {
   updatedAt   DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id])
   userId      Int
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
