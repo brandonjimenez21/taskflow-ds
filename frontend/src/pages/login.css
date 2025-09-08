@@ -1,5 +1,4 @@
 /* Contenedor principal centrado */
-/* Contenedor principal centrado */
 .login-container {
   display: flex;
   justify-content: center;
@@ -124,4 +123,32 @@
   font-size: 1.2rem;
   font-weight: bold;
   color: #333;
+}
+
+.formo-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-secondary {
+  flex: 1;
+  background: #e5e7eb;   /* gris claro */
+  color: #374151;
+  font-weight: 500;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+/* Ajuste del botón primario en formularios múltiples */
+.form-footer .btn-primary {
+  flex: 1;
 }

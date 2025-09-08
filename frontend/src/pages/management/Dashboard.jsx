@@ -1,90 +1,107 @@
-import React, { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../../contexts/AuthContext";
-import Stats from "../../components/Stats";
-import { Card } from "react-bootstrap"; 
+import React, { useEffect, useState } from "react";
 import {
-  PieChart, Pie, Cell, Tooltip, Legend,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer
+  BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell
 } from "recharts";
+import "./dashboard.css";
 
-const Dashboard = () => {
-  const { user } = useContext(AuthContext);
+const COLORS = ["#2563eb", "#16a34a", "#f59e0b"];
 
-  if (!user) {
-    return <p className="text-center mt-5">Cargando...</p>;
-  }
+const ManagerDashboard = () => {
+  const [stats, setStats] = useState(null);
+  const token = localStorage.getItem("accessToken");
 
-  if (user.role !== "manager") {
-    return <p className="text-center mt-5">Acceso denegado. Se requiere rol de manager.</p>;
-  }
-
-  const [stats, setStats] = useState({ todo: 0, inProgress: 0, done: 0 });
-
-  // Pedir datos al backend
   useEffect(() => {
-    fetch("http://localhost:4000/api/tasks/stats")
+    fetch("http://localhost:3000/stats", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((res) => res.json())
       .then((data) => setStats(data))
-      .catch((err) => console.error(err));
+      .catch((err) => console.error("Error cargando stats:", err));
   }, []);
 
-  // Adaptar datos para los gráficos
-  const chartData = [
-    { name: "Pendientes", value: stats.todo },
-    { name: "En Progreso", value: stats.inProgress },
-    { name: "Finalizadas", value: stats.done },
-  ];
+  if (!stats) return <p className="loading">Cargando estadísticas...</p>;
 
-  const COLORS = ["#FFBB28", "#00C49F", "#0088FE"];
+  const tasksByStatus = stats.tasksByStatus.map((s) => ({
+    name: s.status,
+    value: s._count.status,
+  }));
+
+  const tasksByPriority = stats.tasksByPriority.map((p) => ({
+    name: p.priority,
+    value: p._count.priority,
+  }));
 
   return (
-    <div className="container my-4">
-      <h2 className="text-center mb-4">📊 Estadísticas de Tareas</h2>
-
-      {/* Tarjetas */}
-      <div className="d-flex justify-content-around mb-4">
-        <Card className="p-3 text-center">
-          <h5>Pendientes</h5>
-          <h2>{stats.todo}</h2>
-        </Card>
-        <Card className="p-3 text-center">
-          <h5>En Progreso</h5>
-          <h2>{stats.inProgress}</h2>
-        </Card>
-        <Card className="p-3 text-center">
-          <h5>Finalizadas</h5>
-          <h2>{stats.done}</h2>
-        </Card>
+    <div className="dashboard-container">
+      {/* Encabezado */}
+      <div className="dashboard-header">
+        <h1>Dashboard de Manager</h1>
+        <span>Resumen de tareas y métricas del departamento</span>
       </div>
 
-      {/* Gráfico de pastel */}
-      <h4 className="text-center mt-4">Gráfico Circular</h4>
-      <ResponsiveContainer width="100%" height={300}>
-        <PieChart>
-          <Pie data={chartData} dataKey="value" cx="50%" cy="50%" outerRadius={100} label>
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </PieChart>
-      </ResponsiveContainer>
+      {/* Métricas rápidas */}
+      <div className="metrics-grid">
+        <div className="metric-box">
+          <p className="metric-title">Total de Tareas</p>
+          <p className="metric-value">{stats.totalTasks}</p>
+        </div>
+        <div className="metric-box">
+          <p className="metric-title">En Proceso</p>
+          <p className="metric-value">
+            {tasksByStatus.find((s) => s.name === "PROCESS")?.value || 0}
+          </p>
+        </div>
+        <div className="metric-box">
+          <p className="metric-title">Completadas</p>
+          <p className="metric-value">
+            {tasksByStatus.find((s) => s.name === "DONE")?.value || 0}
+          </p>
+        </div>
+      </div>
 
-      {/* Gráfico de barras */}
-      <h4 className="text-center mt-5">Gráfico de Barras</h4>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="value" fill="#8884d8" />
-        </BarChart>
-      </ResponsiveContainer>
+      {/* Sección de gráficos */}
+      <div className="dashboard-grid">
+        <div className="dashboard-card">
+          <h2>Tareas por Prioridad</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={tasksByPriority}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="dashboard-card">
+          <h2>Tareas por Estado</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={tasksByStatus}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) =>
+                  `${name} ${(percent * 100).toFixed(0)}%`
+                }
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {tasksByStatus.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default ManagerDashboard;

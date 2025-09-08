@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import "./style.css";
+import "./login.css";
 
 const CreateTask = () => {
   const [title, setTitle] = useState("");
@@ -35,7 +35,7 @@ const CreateTask = () => {
   };
 
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100">
+    <div className="login-container">
       <div className="form-card">
         <h2 className="mb-4">Nueva Tarea</h2>
         {error && <div className="alert alert-danger">{error}</div>}
