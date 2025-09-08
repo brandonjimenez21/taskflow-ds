@@ -63,15 +63,16 @@ router.put("/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// Eliminar tarea
+// Eliminar tarea (lógico)
 router.delete("/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const task = await prisma.task.delete({
+    const task = await prisma.task.update({
       where: { id: Number(id) },
+      data: { deleted: true },
     });
-    res.json({ message: "Tarea eliminada", task });
+    res.json({ message: "Tarea eliminada lógicamente", task });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error eliminando la tarea" });
@@ -83,14 +84,15 @@ router.get("/", authMiddleware, async (req, res) => {
   try {
     const { search, orderBy } = req.query;
 
-    // Construir orden seguro (igual que hicimos antes)
+    // Construir orden seguro
     let order = undefined;
     if (orderBy) {
       const [field, direction] = orderBy.split(" ");
       const allowedFields = ["dueDate", "priority"];
       const allowedDirections = ["asc", "desc"];
       if (
-        field && direction &&
+        field &&
+        direction &&
         allowedFields.includes(field) &&
         allowedDirections.includes(direction.toLowerCase())
       ) {
@@ -100,8 +102,8 @@ router.get("/", authMiddleware, async (req, res) => {
       }
     }
 
-    // Construir filtro de búsqueda
-    let where = {};
+    // Construir filtro de búsqueda, incluyendo deleted: false
+    let where = { deleted: false }; // 👈 solo tareas activas
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
@@ -121,6 +123,7 @@ router.get("/", authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Error obteniendo las tareas" });
   }
 });
+
 
 router.post("/test-token", (req, res) => {
   const {userId} = req.body;

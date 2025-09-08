@@ -5,7 +5,7 @@ const taskRoutes = require("../routes/tasks");
 
 // Mockeamos el middleware de autenticación para que siempre ponga un usuario válido
 jest.mock("../middlewares/authMiddleware", () => (req, res, next) => {
-  req.user = { userId: 1, role: "Manager" }; 
+  req.user = { userId: 1, role: "Manager" };
   next();
 });
 
@@ -33,10 +33,13 @@ describe("Pruebas de creación de tareas", () => {
   it("Debe devolver 400 si falta el título", async () => {
     const res = await request(app)
       .post("/tasks")
-      .send({ dueDate: "2025-09-10" }); 
+      .send({ dueDate: "2025-09-10" });
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty("error", "El título y la fecha límite son obligatorios");
+    expect(res.body).toHaveProperty(
+      "error",
+      "El título y la fecha límite son obligatorios"
+    );
   });
 
   it("Debe devolver 400 si falta la fecha límite", async () => {
@@ -45,7 +48,10 @@ describe("Pruebas de creación de tareas", () => {
       .send({ title: "Mi tarea" });
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty("error", "El título y la fecha límite son obligatorios");
+    expect(res.body).toHaveProperty(
+      "error",
+      "El título y la fecha límite son obligatorios"
+    );
   });
 
   it("Debe crear la tarea si los datos son correctos", async () => {
@@ -68,5 +74,42 @@ describe("Pruebas de creación de tareas", () => {
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty("id", 1);
     expect(res.body.title).toBe("Mi tarea");
+  });
+});
+
+describe("Pruebas de borrado lógico de tareas", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("Debe marcar una tarea como eliminada", async () => {
+    const mockTask = { id: 1, title: "Tarea", deleted: true };
+
+    // Mockeamos la actualización de Prisma
+    prisma.task.update.mockResolvedValue(mockTask);
+
+    // Hacemos la petición DELETE
+    const res = await request(app).delete("/tasks/1");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty(
+      "message",
+      "Tarea eliminada lógicamente"
+    );
+    expect(res.body.task.deleted).toBe(true);
+  });
+
+  it("No debe listar tareas eliminadas", async () => {
+    // Mockeamos que solo existen tareas activas
+    prisma.task.findMany.mockResolvedValue([
+      { id: 1, title: "Activa", deleted: false },
+    ]);
+
+    const res = await request(app).get("/tasks");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([{ id: 1, title: "Activa", deleted: false }]);
+    // Verificamos que no haya tareas con deleted = true
+    expect(res.body.find((t) => t.deleted === true)).toBeUndefined();
   });
 });
