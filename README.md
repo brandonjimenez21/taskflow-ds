@@ -81,7 +81,10 @@ Prisma Studio (npx prisma studio) → inspección visual de la BD.
 
 Instalar Please en el backend
 Express: npm install express cors dotenv @prisma/client
+
 npm install bcryptjs jsonwebtoken
+npm install json2csv pdfkit
+npm install svg-to-pdfkit
 
 ### 8. Tipos de pruebas:
 
