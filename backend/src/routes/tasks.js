@@ -6,14 +6,11 @@ const authMiddleware = require("../middlewares/authMiddleware");
 // Crear tarea
 router.post("/", authMiddleware, async (req, res) => {
   const { title, description, status, priority, dueDate } = req.body;
-  const userId = req.body.id; // Asegúrate de obtener el userId del cuerpo de la solicitud o del token
+  const userId = req.user.userId; // tomar el userId del token, no del body
 
-  if (!title || !dueDate || !userId) {
-    return res.status(400).json({ error: "Faltan campos obligatorios" });
-  }
-
-  if (req.user.role !== 'Manager' && req.user.userId !== userId) {
-    return res.status(403).json({ error: "Usuario no apto a crear tarea" });
+  // Validar campos obligatorios
+  if (!title || !dueDate) {
+    return res.status(400).json({ error: "El título y la fecha límite son obligatorios" });
   }
 
   try {
@@ -21,8 +18,8 @@ router.post("/", authMiddleware, async (req, res) => {
       data: {
         title,
         description,
-        status,
-        priority,
+        status: status || "pendiente",
+        priority: priority || "media",
         dueDate: new Date(dueDate),
         userId
       },
@@ -34,17 +31,15 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/edit", authMiddleware, async (req, res) => {
-  const { id, title, description, status, priority, dueDate } = req.body;  
+// Editar tarea
+router.put("/:id", authMiddleware, async (req, res) => {
+  const { title, description, status, priority, dueDate } = req.body;
+  const { id } = req.params;
 
-  if (!id || !title || !dueDate) {
-    return res.status(400).json({ error: "Faltan campos obligatorios" });
+  // Validar campos obligatorios
+  if (!title || !dueDate) {
+    return res.status(400).json({ error: "El título y la fecha límite son obligatorios" });
   }
-
-  if (req.user.role !== 'Manager' && req.user.id !== userId) {
-    return res.status(400).json({ error: "Usuario no apto a modificar tarea" });
-  }
-  
 
   try {
     const task = await prisma.task.update({
@@ -58,12 +53,9 @@ router.post("/edit", authMiddleware, async (req, res) => {
   }
 });
 
+// Eliminar tarea
 router.delete("/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
-
-  if (req.user.role !== 'Manager' && req.user.userId !== userId) {
-    return res.status(403).json({ error: "Usuario no apto a eliminar tarea" });
-  }
 
   try {
     const task = await prisma.task.delete({
@@ -76,14 +68,14 @@ router.delete("/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// Listar tareas
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const tasks = await prisma.task.findMany({
       include: { user: { select: { id: true, name: true, email: true } } },
     });
     res.json(tasks);
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error obteniendo las tareas" });
   }
