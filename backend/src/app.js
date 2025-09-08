@@ -12,11 +12,11 @@ app.get("/", (req, res) => {
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/users");
 const taskRoutes = require("./routes/tasks");
-const passwordRoutes = require("./routes/password");
+const departmentRoutes = require("./routes/department");
 
 app.use("/api", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
-app.use("/api/password", passwordRoutes);
+app.use("/department", departmentRoutes);
 
 module.exports = app;
